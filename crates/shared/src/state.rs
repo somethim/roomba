@@ -13,3 +13,16 @@ impl Position {
         Self { x, y, z }
     }
 }
+
+#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+pub struct Orientation {
+    pub roll: f32,
+    pub pitch: f32,
+    pub yaw: f32,
+}
+impl Orientation {
+    #[must_use]
+    pub const fn new(roll: f32, pitch: f32, yaw: f32) -> Self {
+        Self { roll, pitch, yaw }
+    }
+}

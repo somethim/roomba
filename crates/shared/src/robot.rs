@@ -1,5 +1,5 @@
 use crate::map::Origin;
-use crate::state::Position;
+use crate::state::{Orientation, Position};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
@@ -25,19 +25,6 @@ pub enum Mode {
     Sweeping,
     Docking,
     Charging,
-}
-
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
-pub struct Orientation {
-    pub roll: f32,
-    pub pitch: f32,
-    pub yaw: f32,
-}
-impl Orientation {
-    #[must_use]
-    pub const fn new(roll: f32, pitch: f32, yaw: f32) -> Self {
-        Self { roll, pitch, yaw }
-    }
 }
 
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]

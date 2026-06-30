@@ -1,11 +1,9 @@
 use robot::get_current_position_on_map;
 use shared::map::Map;
-use shared::robot::{Mode, Orientation, Pose, State};
-use shared::state::Position;
+use shared::robot::{Mode, Pose, State};
+use shared::state::{Orientation, Position};
 
 fn main() {
-    println!("Hello, world!");
-
     let world = Map::default();
     let state = State::new(
         Pose::new(
