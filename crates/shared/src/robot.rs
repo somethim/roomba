@@ -1,33 +1,29 @@
-use crate::map::Origin;
-use crate::state::{Orientation, Position};
+use crate::geometry::{Orientation, Point};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Pose {
-    pub position: Position,
+    pub point: Point,
     pub orientation: Orientation,
 }
 
 impl Pose {
     #[must_use]
-    pub const fn new(position: Position, orientation: Orientation) -> Self {
-        Self {
-            position,
-            orientation,
-        }
+    pub const fn new(point: Point, orientation: Orientation) -> Self {
+        Self { point, orientation }
     }
 }
 
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[non_exhaustive]
 pub enum Mode {
-    #[default]
     Idle,
     Sweeping,
     Docking,
     Charging,
 }
 
-#[derive(Debug, Clone, Copy, Default, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct State {
     pub pose: Pose,
     pub mode: Mode,
@@ -35,15 +31,6 @@ pub struct State {
 }
 
 impl State {
-    #[must_use]
-    pub fn get_relative_position(&self, origin: &Origin) -> Position {
-        Position {
-            x: self.pose.position.x - origin.position.x,
-            y: self.pose.position.y - origin.position.y,
-            z: self.pose.position.z - origin.position.z,
-        }
-    }
-
     #[must_use]
     pub const fn new(pose: Pose, mode: Mode, battery: f32) -> Self {
         Self {
