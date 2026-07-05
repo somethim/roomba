@@ -28,7 +28,7 @@ The project is considered **done** when the simulated robot can:
    robot passes over them.
 3. **Classify and handle large objects** — ignore them from cleaning, and instead plan a path to either drive around or
    over them depending on size.
-4. **Localize itself** on a known, pre-loaded map using an Extended Kalman Filter (EKF) implemented from scratch.
+4. **Localize itself** on a known, pre-loaded map using a hand-written Extended Kalman Filter (EKF) that fuses noisy odometry/IMU motion with periodic docking-station beacon corrections.
 5. **Visualize all of the above** in a live 2D top-down view.
 
 ---
@@ -45,11 +45,23 @@ The robot is given full knowledge of the environment at startup. The map include
 
 No runtime sensor detection in this phase — object awareness comes from the map data itself.
 
+The simulator also provides noisy motion and reference measurements for localization, including odometry, IMU data, and
+docking-station beacon observations.
+
 ### 3.2 EKF-Based Localization (Hand-Written)
 
-The robot uses an Extended Kalman Filter, written from scratch by the developer, to estimate its position and
-orientation within the known map. This is the core of the robot's "brain" and the primary learning artifact of the
-project.
+The robot uses an Extended Kalman Filter, written from scratch by the developer, to estimate its 2D pose (`x`, `y`,
+heading) within a known, pre-loaded map.
+
+The EKF predicts the robot's motion using simulated wheel odometry and IMU data, both of which include noise and drift.
+To prevent error from accumulating indefinitely, the robot periodically corrects its pose estimate using observations of
+the docking station, which acts as a fixed reference beacon at a known world position.
+
+For MVP, the docking station provides a simple simulated measurement such as range and bearing relative to the robot.
+This keeps the localization problem focused on sensor fusion and state estimation rather than SLAM or scan matching.
+
+This is the primary learning artifact of the project: implementing the EKF's motion model, measurement model,
+Jacobians, predict/update steps, and covariance tuning by hand.
 
 ### 3.3 Boustrophedon Coverage Sweeping
 
@@ -103,7 +115,8 @@ zone entirely — the robot never enters it, and the visualizer renders it clear
 
 - Simulation only — no physical hardware
 - Pre-loaded, static map with embedded object data
-- Hand-written EKF for localization
+- Hand-written EKF for 2D pose localization
+- Simulated odometry and IMU prediction with docking-station beacon correction
 - Boustrophedon sweep planning with local obstacle replanning
 - Object classification (small = clean, large = navigate)
 - 2D top-down visualizer running on the developer's machine
@@ -111,7 +124,9 @@ zone entirely — the robot never enters it, and the visualizer renders it clear
 
 ### Out of Scope (MVP)
 
-- Real sensor input (camera, LiDAR) — planned for physical hardware phase
+- SLAM or runtime map generation
+- LiDAR scan matching
+- Real sensor input (camera, LiDAR, hardware IMU)
 - Runtime object detection — objects are map-defined for now
 - Web dashboard or mobile UI (Leptos/Axum stack) — future phase
 - Terminal UI (Ratatui) — future phase

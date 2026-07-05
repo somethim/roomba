@@ -2,35 +2,65 @@ use crate::geometry::{Orientation, Point};
 use serde::{Deserialize, Serialize};
 use std::iter::once;
 
+pub use crate::validation::map::{MapBuildWarning, MapValidationError};
+
+#[derive(Debug, Default, PartialEq, Eq)]
+pub struct MapBuildReport {
+    pub warnings: Vec<MapBuildWarning>,
+}
+
 /// The world of the robot, its operating ground
+/// - boundaries are implicitly closed
+///
 ///
 /// TODO: validate map geometry:
-///  - `outer_boundary` must contain at least 3 distinct points
-///  - boundaries are implicitly closed
 ///  - no adjacent duplicate points
 ///  - no zero-length edges
-///  - `outer_boundary` must not self-intersect
-///  - every `inner_boundary` must be fully inside `outer_boundary`
-///  - `inner_boundaries` must not intersect each other
+///  - every `inner_boundary` edge must remain inside `outer_boundary`
 ///  - docking station must be inside `outer_boundary` and outside all `inner_boundaries`
+///  - normalize intersecting `inner_boundaries` into canonical merged blocked regions
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Map {
     pub docking_station: DockingStation,
     pub outer_boundary: Vec<Point>,
     pub inner_boundaries: Vec<Vec<Point>>,
 }
+
 impl Map {
-    #[must_use]
-    pub const fn new(
+    /// Creates a new map after validating its geometry and collecting world-building warnings.
+    ///
+    /// # Errors
+    /// - `MapValidationError::OuterBoundaryTooSmall`
+    /// - `MapValidationError::InnerBoundaryOutOfBounds`
+    /// - `MapValidationError::InnerBoundarySelfIntersects`
+    /// - `MapValidationError::OuterBoundaryIntersects`
+    pub fn build(
         docking_station: DockingStation,
         outer_boundary: Vec<Point>,
         inner_boundaries: Vec<Vec<Point>>,
-    ) -> Self {
-        Self {
-            docking_station,
-            outer_boundary,
-            inner_boundaries,
+    ) -> Result<(Self, MapBuildReport), Vec<MapValidationError>> {
+        let mut errors = Vec::new();
+
+        errors.extend(Self::validate_outer_boundary(&outer_boundary));
+        errors.extend(Self::validate_inner_boundaries(
+            &outer_boundary,
+            &inner_boundaries,
+        ));
+
+        if !errors.is_empty() {
+            return Err(errors);
         }
+
+        let (inner_boundaries, warnings) = Self::normalize_inner_boundaries(inner_boundaries);
+
+        Ok((
+            Self {
+                docking_station,
+                outer_boundary,
+                inner_boundaries,
+            },
+            MapBuildReport { warnings },
+        ))
     }
 
     #[must_use]
@@ -42,7 +72,7 @@ impl Map {
                 .any(|boundary| Self::point_in_polygon(point, boundary))
     }
 
-    fn point_in_polygon(point: Point, polygon: &[Point]) -> bool {
+    pub(crate) fn point_in_polygon(point: Point, polygon: &[Point]) -> bool {
         if polygon.len() < 3 {
             return false;
         }
