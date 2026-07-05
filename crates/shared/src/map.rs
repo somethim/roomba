@@ -12,13 +12,18 @@ pub struct MapBuildReport {
 /// The world of the robot, its operating ground
 /// - boundaries are implicitly closed
 ///
+/// Already validated in `validation::map`: outer boundary has ≥ 3 points, outer and
+/// inner boundaries don't self-intersect, every inner-boundary *vertex* lies inside
+/// the outer boundary, and intersecting inner boundaries raise a build warning.
 ///
-/// TODO: validate map geometry:
-///  - no adjacent duplicate points
-///  - no zero-length edges
-///  - every `inner_boundary` edge must remain inside `outer_boundary`
-///  - docking station must be inside `outer_boundary` and outside all `inner_boundaries`
-///  - normalize intersecting `inner_boundaries` into canonical merged blocked regions
+/// TODO: remaining geometry validation:
+///  - reject adjacent duplicate points and zero-length edges
+///  - require inner-boundary *edges* (not just vertices) to stay inside a concave
+///    outer boundary
+///  - require the docking station to lie inside `outer_boundary` and outside every
+///    inner boundary
+///  - upgrade the intersecting-`inner_boundaries` handling from a warning-only
+///    logical merge to a real geometric union of blocked regions
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Map {
     pub docking_station: DockingStation,

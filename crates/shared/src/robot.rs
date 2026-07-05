@@ -1,7 +1,7 @@
 use crate::geometry::{Orientation, Point};
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 pub struct Pose {
     pub point: Point,
     pub orientation: Orientation,

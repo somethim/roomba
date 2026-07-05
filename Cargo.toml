@@ -9,17 +9,17 @@ members = ["crates/shared", "crates/robot", "crates/sim"]
 shared = { path = "crates/shared" }
 robot = { path = "crates/robot" }
 
-# Serialization — domain types + map files
+# Serialization, domain types + map files
 serde = { version = "1.0.228", features = ["derive"] }
 ron = "0.12.2"
 
-# Math — matrix plumbing for the hand-written EKF
+# Math, matrix plumbing for the hand-written EKF
 nalgebra = "0.35.0"
 
 # Simulation
 macroquad = "0.4.15"
 rand = "0.10.1"
 
-# Error handling — thiserror in libs, anyhow in the binary
+# Error handling, thiserror in libs, anyhow in the binary
 thiserror = "2.0.18"
 anyhow = "1.0.103"

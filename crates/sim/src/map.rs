@@ -1,8 +1,6 @@
 use macroquad::color::{Color, BLACK, GOLD, GREEN, LIME, ORANGE, RED, SKYBLUE, WHITE, YELLOW};
 use macroquad::math::{vec2, Vec2};
-use macroquad::prelude::{
-    clear_background, draw_circle, draw_line, draw_text, next_frame, screen_height,
-};
+use macroquad::prelude::{clear_background, draw_circle, draw_line, draw_text, screen_height};
 use shared::geometry::{Orientation, Point};
 use shared::map::{DockingStation, Map};
 use shared::robot::{Mode, Pose, State};
@@ -14,11 +12,14 @@ pub struct Scene {
     pub planned_path: Vec<Point>,
     pub true_pose: State,
     pub estimated_pose: Option<Pose>,
+    pub docking_station: DockingStation,
 }
 
 pub fn declare() -> Scene {
+    let docking_station = DockingStation::new(Point::new(2.0, 2.0), Orientation::new(0.0));
+
     let (map, report) = Map::build(
-        DockingStation::new(Point::new(2.0, 2.0), Orientation::new(0.0)),
+        docking_station.clone(),
         vec![
             Point::new(0.0, 0.0),
             Point::new(14.0, 0.0),
@@ -76,28 +77,27 @@ pub fn declare() -> Scene {
         true_pose,
         estimated_pose,
         map,
+        docking_station,
     }
 }
 
-pub async fn draw(scene: Scene) {
-    loop {
-        clear_background(BLACK);
+/// Renders one frame of the scene. The frame loop itself lives in `main`, so it
+/// can advance the simulation between draws.
+pub fn draw_frame(scene: &Scene) {
+    clear_background(BLACK);
 
-        draw_map(&scene.map);
-        draw_no_go_zones(&scene.map.inner_boundaries);
-        draw_obstacles(&scene.obstacles);
-        draw_planned_path(&scene.planned_path);
-        draw_dirt(&scene.dirt);
+    draw_map(&scene.map);
+    draw_inner_boundaries(&scene.map.inner_boundaries);
+    draw_obstacles(&scene.obstacles);
+    draw_planned_path(&scene.planned_path);
+    draw_dirt(&scene.dirt);
 
-        if let Some(estimate) = &scene.estimated_pose {
-            draw_pose(estimate, YELLOW);
-        }
-        draw_pose(&scene.true_pose.pose, LIME);
-
-        draw_hud(&scene.true_pose);
-
-        next_frame().await;
+    if let Some(estimate) = &scene.estimated_pose {
+        draw_pose(estimate, YELLOW);
     }
+    draw_pose(&scene.true_pose.pose, LIME);
+
+    draw_hud(&scene.true_pose);
 }
 
 fn draw_map(map: &Map) {
@@ -108,11 +108,11 @@ fn draw_map(map: &Map) {
     label(map.docking_station.point, "dock", GREEN);
 }
 
-fn draw_no_go_zones(zones: &[Vec<Point>]) {
-    for zone in zones {
-        draw_polygon_outline(zone, ORANGE, 2.0);
-        if let Some(center) = centroid(zone) {
-            label(center, "no-go", ORANGE);
+fn draw_inner_boundaries(boundaries: &[Vec<Point>]) {
+    for boundary in boundaries {
+        draw_polygon_outline(boundary, ORANGE, 2.0);
+        if let Some(center) = centroid(boundary) {
+            label(center, "wall", ORANGE);
         }
     }
 }
