@@ -13,10 +13,10 @@ The whole point is that *they* do the thinking and the coding. So:
   Kalman-gain formula, etc.) — *do* teach those plainly; that's not scaffolding.
 - **Diagrams: you draw, they derive.** They own every design decision (reached via your questions);
   you only transcribe it. **Never invent design content.**
-  - Diagrams live in **`docs/` as `.excalidraw` files ONLY.** They tried Mermaid and rejected it;
-    they find hand-drawing hard, so you generate the `.excalidraw` JSON.
-  - Layout tips (you can't see the render): generous spacing, **no filled container boxes** (they
-    render as black slabs in the owner's dark theme), minimal arrow bends, labels clear of boxes.
+    - Diagrams live in **`docs/` as `.excalidraw` files ONLY.** They tried Mermaid and rejected it;
+      they find hand-drawing hard, so you generate the `.excalidraw` JSON.
+    - Layout tips (you can't see the render): generous spacing, **no filled container boxes** (they
+      render as black slabs in the owner's dark theme), minimal arrow bends, labels clear of boxes.
 - **The map keeps them on-track.** When tempted to add something, the test is *"which box on the
   map is this?"* — build **to the map**, don't scope-creep off it.
 
@@ -27,6 +27,7 @@ simulation first. Full vision: `references/Roomba-Style Autonomous Robot — Pro
 MVP spec (PRD): `references/Roomba Sim EKF Coverage Validator.md`.
 
 **MVP = 3 crates:**
+
 - `shared` — domain types crossing every boundary (Pose, Map, Cell, commands, measurements).
 - `robot` — the brain **library**: state machine, hand-written **EKF** localization, boustrophedon
   coverage planner, object handling, all behind a **hardware-abstraction trait**. No `main`, unit-testable.
@@ -36,18 +37,18 @@ MVP spec (PRD): `references/Roomba Sim EKF Coverage Validator.md`.
 Core algorithms (EKF, coverage planner) are **hand-written for learning**; external crates only for
 plumbing (`macroquad` render, `serde`/`ron`, `nalgebra` matrices, `tokio` later).
 
-## Current state (as of 2026-07-07)
+## Current state
 
-- **No code yet** — clean slate. This session was pure design.
+- **Workspace scaffolded** — 3 crates in `crates/`, `shared` has module structure with domain types (pose, command, measurement, geometry, map), `robot` has trait placeholder, `sim` has entrypoint.
 - **Design map is COMPLETE** — 8 Excalidraw diagrams in `docs/`, fully cross-linked:
-  - `01-overview` — one Sense→Plan→Act tick + shared state + supervisor
-  - `02-modes` — state machine: Idle · Cleaning · Moving{target} · Charging · Fault · Off
-  - `03-concurrency` — Tokio tasks (one per sensor) + channels + shared state
-  - `04-plan-tick` — the pipeline inside one PLAN tick (links to 06/07/08)
-  - `05-act-sim-seam` — ACT → hardware-abstraction trait → SimHost → noisy sensors (loop closes)
-  - `06-ekf-localize` — the EKF predict/update loop
-  - `07-coverage` — boustrophedon sweep decision flow
-  - `08-object-handling` — dirt vs. obstacle handling
+    - `01-overview` — one Sense→Plan→Act tick + shared state + supervisor
+    - `02-modes` — state machine: Idle · Cleaning · Moving{target} · Charging · Fault · Off
+    - `03-concurrency` — Tokio tasks (one per sensor) + channels + shared state
+    - `04-plan-tick` — the pipeline inside one PLAN tick (links to 06/07/08)
+    - `05-act-sim-seam` — ACT → hardware-abstraction trait → SimHost → noisy sensors (loop closes)
+    - `06-ekf-localize` — the EKF predict/update loop
+    - `07-coverage` — boustrophedon sweep decision flow
+    - `08-object-handling` — dirt vs. obstacle handling
 
 ## Locked design decisions (don't relitigate — amend the diagram if changing)
 
@@ -78,7 +79,6 @@ plumbing (`macroquad` render, `serde`/`ron`, `nalgebra` matrices, `tokio` later)
 
 ## Next step — build slice 1 (do this Socratically; the owner writes it)
 
-Set up the Cargo workspace (`shared` + `robot` + `sim`) and get a robot driving in sim with
-**ground-truth pose** — no EKF, no coverage — just proving the Sense→Plan→Act loop closes and the
-`macroquad` visualizer draws. Then vertical-slice upward: swap in the EKF (Diagram 6), then
-coverage (7), then modes (2).
+Get a robot driving in sim with **ground-truth pose** — no EKF, no coverage — just proving the
+Sense→Plan→Act loop closes and the `macroquad` visualizer draws. Then vertical-slice upward:
+swap in the EKF (Diagram 6), then coverage (7), then modes (2).
