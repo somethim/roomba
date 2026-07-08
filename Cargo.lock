@@ -5,6 +5,9 @@ version = 4
 [[package]]
 name = "robot"
 version = "0.1.0"
+dependencies = [
+ "shared",
+]
 
 [[package]]
 name = "shared"
@@ -13,3 +16,6 @@ version = "0.1.0"
 [[package]]
 name = "sim"
 version = "0.1.0"
+dependencies = [
+ "robot",
+]
