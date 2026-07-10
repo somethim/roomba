@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 robot = { path = "../robot" }
+shared = { path = "../shared" }

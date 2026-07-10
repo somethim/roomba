@@ -3,3 +3,6 @@ resolver = "3"
 members = [
     "crates/robot", "crates/shared", "crates/sim",
 ]
+
+[workspace.dependencies]
+nalgebra = "0.35.0"
