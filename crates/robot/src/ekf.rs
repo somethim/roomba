@@ -8,6 +8,7 @@ const INITIAL_COVARIANCE: Matrix3<f64> = Matrix3::new(
     0.0, 0.0, 0.001, //
 );
 
+#[derive(Debug, Clone, Copy)]
 pub struct Ekf {
     /// [x, y, yaw]
     state: Vector3<f64>,
@@ -36,19 +37,20 @@ impl Ekf {
         }
     }
 
-    fn predict(self, d: f64, delta_theta: f64) -> Self {
+    #[must_use]
+    pub fn state(&self) -> (f64, f64, f64) {
+        (self.state.x, self.state.y, self.state.z)
+    }
+
+    pub fn predict(&mut self, d: f64, delta_theta: f64) {
         let motion_model_vector = self.motion_model(d, delta_theta);
         let jacobian_matrix = self.jacobian_f(d);
 
         let new_covariance =
             jacobian_matrix * self.covariance * jacobian_matrix.transpose() + self.process_noise;
 
-        Self {
-            state: motion_model_vector,
-            covariance: new_covariance,
-            process_noise: self.process_noise,
-            measurement_noise: self.measurement_noise,
-        }
+        self.state = motion_model_vector;
+        self.covariance = new_covariance;
     }
 
     fn motion_model(&self, d: f64, delta_theta: f64) -> Vector3<f64> {
@@ -75,7 +77,11 @@ impl Ekf {
         )
     }
 
-    fn update(self, docking_station: &DockingStation, beacon: &Beacon) -> Self {
+    pub fn update(&mut self, docking_station: &DockingStation, beacon: &Beacon) {
+        if beacon.range < 1e-6 {
+            return;
+        }
+
         let jacobian_matrix = self.jacobian_h(docking_station);
         let kalman_gain = self.kalman_gain(&jacobian_matrix);
         let innovation = self.innovation(docking_station, beacon);
@@ -83,12 +89,8 @@ impl Ekf {
         let new_covariance =
             (Matrix3::identity() - kalman_gain * jacobian_matrix) * self.covariance;
 
-        Self {
-            state: new_state,
-            covariance: new_covariance,
-            process_noise: self.process_noise,
-            measurement_noise: self.measurement_noise,
-        }
+        self.state = new_state;
+        self.covariance = new_covariance;
     }
 
     fn innovation(&self, docking_station: &DockingStation, beacon: &Beacon) -> Vector2<f64> {

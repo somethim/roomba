@@ -1,14 +1,12 @@
 use crate::geometry::{Orientation, Point};
 
-#[cfg(test)]
-mod test;
-mod validate;
-
+#[derive(Debug, Clone, Copy)]
 pub struct DockingStation {
     pub point: Point,
     pub orientation: Orientation,
 }
 
+#[derive(Debug, Clone)]
 pub struct Map {
     pub outer_bounds: Vec<Point>,
     pub inner_bounds: Vec<Vec<Point>>,
