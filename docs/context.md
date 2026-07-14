@@ -35,6 +35,11 @@ roomba/
 - **`sim`** — entrypoint in `main.rs`
 - **Next:** Slice 1 — driving loop + macroquad visualization
 
+## TODO
+
+- Fix EKF angle wrapping / radian normalization in the predict-update path. Current divergence is
+  likely caused by unwrapped yaw and bearing residuals.
+
 ## Architecture & Locked Design Decisions
 
 ### Loop

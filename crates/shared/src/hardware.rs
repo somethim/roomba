@@ -1,10 +1,10 @@
 use crate::{command::Command, measurement::Measurement};
 
 pub trait Hardware {
-    const TICK_SPEED: u32;
-    const WHEEL_RADIUS: f64;
-    const WHEEL_DISTANCE: f64;
-    const TICKS_PER_REV: i32;
+    const CONTROL_DT_MS: u32;
+    const WHEEL_RADIUS_M: f64;
+    const TRACK_WIDTH_M: f64;
+    const ENCODER_TICKS_PER_REV: u32;
 
     fn sense(&self) -> Measurement;
 

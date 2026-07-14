@@ -6,3 +6,7 @@ members = [
 
 [workspace.dependencies]
 nalgebra = "0.35.0"
+macroquad = "0.4.15"
+robot = { path = "crates/robot" }
+sim = { path = "crates/sim" }
+shared = { path = "crates/shared" }

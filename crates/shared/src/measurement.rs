@@ -19,24 +19,24 @@ impl Odometry {
     {
         let v_left = last_command
             .angular_velocity
-            .mul_add(-(H::WHEEL_DISTANCE / 2.0), last_command.linear_velocity);
+            .mul_add(-(H::TRACK_WIDTH_M / 2.0), last_command.linear_velocity);
         let v_right = last_command
             .angular_velocity
-            .mul_add(H::WHEEL_DISTANCE / 2.0, last_command.linear_velocity);
+            .mul_add(H::TRACK_WIDTH_M / 2.0, last_command.linear_velocity);
 
-        let dt = f64::from(H::TICK_SPEED) / 1000.0;
+        let dt = f64::from(H::CONTROL_DT_MS) / 1000.0;
         let d_left = v_left * dt;
         let d_right = v_right * dt;
 
-        let circumference = H::WHEEL_RADIUS * std::f64::consts::PI * 2.0;
+        let circumference = H::WHEEL_RADIUS_M * std::f64::consts::PI * 2.0;
 
         #[allow(clippy::cast_possible_truncation)]
-        let left_ticks = (d_left / circumference * f64::from(H::TICKS_PER_REV))
+        let left_ticks = (d_left / circumference * f64::from(H::ENCODER_TICKS_PER_REV))
             .round()
             .clamp(f64::from(i32::MIN), f64::from(i32::MAX)) as i32;
 
         #[allow(clippy::cast_possible_truncation)]
-        let right_ticks = (d_right / circumference * f64::from(H::TICKS_PER_REV))
+        let right_ticks = (d_right / circumference * f64::from(H::ENCODER_TICKS_PER_REV))
             .round()
             .clamp(f64::from(i32::MIN), f64::from(i32::MAX)) as i32;
 
@@ -51,11 +51,13 @@ impl Odometry {
     where
         H: Hardware,
     {
-        let circumference = H::WHEEL_RADIUS * 2.0 * std::f64::consts::PI;
-        let d_left = f64::from(self.left_ticks) * circumference / f64::from(H::TICKS_PER_REV);
-        let d_right = f64::from(self.right_ticks) * circumference / f64::from(H::TICKS_PER_REV);
+        let circumference = H::WHEEL_RADIUS_M * 2.0 * std::f64::consts::PI;
+        let d_left =
+            f64::from(self.left_ticks) * circumference / f64::from(H::ENCODER_TICKS_PER_REV);
+        let d_right =
+            f64::from(self.right_ticks) * circumference / f64::from(H::ENCODER_TICKS_PER_REV);
         let d = f64::midpoint(d_left, d_right);
-        let theta = (d_right - d_left) / H::WHEEL_DISTANCE;
+        let theta = (d_right - d_left) / H::TRACK_WIDTH_M;
 
         Motion { d, theta }
     }
@@ -72,7 +74,7 @@ impl Imu {
     where
         H: Hardware,
     {
-        let dt = f64::from(H::TICK_SPEED) / 1000.0;
+        let dt = f64::from(H::CONTROL_DT_MS) / 1000.0;
         let linear_acceleration = prev_command.map_or(0.0, |prev| {
             (last_command.linear_velocity - prev.linear_velocity) / dt
         });
