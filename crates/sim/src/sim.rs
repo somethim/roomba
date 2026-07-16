@@ -1,13 +1,5 @@
-use std::time::Duration;
-
 use robot::{Hardware, Robot};
-use shared::{
-    command::Command,
-    geometry::{Orientation, Point},
-    map::{DockingStation, Map},
-    measurement::Measurement,
-    pose::Pose,
-};
+use shared::{command::Command, map::Map, measurement::Measurement, pose::Pose};
 
 use crate::draw::Draw;
 
@@ -21,21 +13,18 @@ pub struct SimHost {
 
 impl SimHost {
     pub(crate) fn new() -> Self {
-        let docking_station = DockingStation {
-            point: Point { x: 0.5, y: 0.5 },
-            orientation: Orientation { yaw: 0.0 },
-        };
+        let map = Map::default();
 
         Self {
             true_pose: Pose {
-                position: docking_station.point,
-                heading: docking_station.orientation,
+                position: map.docking_station.point,
+                heading: map.docking_station.orientation,
             },
             ekf_pose: Pose {
-                position: docking_station.point,
-                heading: docking_station.orientation,
+                position: map.docking_station.point,
+                heading: map.docking_station.orientation,
             },
-            map: Map::default(),
+            map,
             commands: (
                 Command {
                     linear_velocity: 0.0,
@@ -75,35 +64,10 @@ impl Hardware for SimHost {
 }
 
 impl SimHost {
-    pub fn run(mut self) {
+    pub async fn run(mut self) {
         let mut robot = Robot::new(&self.map);
-
-        let mut tick_count = 0;
-        loop {
-            let (ex, ey, eyaw, measurement, command) = self.step(&mut robot);
-
-            if tick_count >= 100 {
-                break;
-            }
-
-            println!(
-                "[{tick_count:3}] true=({:.2},{:.2},{:.2}) ekf=({:.2},{:.2},{:.2}) range={:.2} command={:?}",
-                self.true_pose.position.x,
-                self.true_pose.position.y,
-                self.true_pose.heading.yaw,
-                ex,
-                ey,
-                eyaw,
-                measurement.beacon.range,
-                command,
-            );
-
-            tick_count += 1;
-
-            self.draw();
-
-            std::thread::sleep(Duration::from_millis(u64::from(Self::CONTROL_DT_MS)));
-        }
+        self.step(&mut robot);
+        self.draw().await;
     }
 
     fn step(&mut self, robot: &mut Robot) -> (f64, f64, f64, Measurement, Command) {
@@ -116,13 +80,13 @@ impl SimHost {
         (ex, ey, eyaw, measurement, command)
     }
 
-    fn draw(&self) {
+    async fn draw(&self) {
         let draw = Draw::new(self);
 
-        draw.draw_outer_shell();
-        draw.draw_rooms();
-        draw.draw_robot();
-        draw.draw_trail();
-        draw.draw_beacon();
+        draw.draw_outer_shell().await;
+        draw.draw_rooms().await;
+        draw.draw_robot().await;
+        draw.draw_trail().await;
+        draw.draw_beacon().await;
     }
 }

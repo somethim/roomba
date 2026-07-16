@@ -12,15 +12,15 @@ impl<'a> Draw<'a> {
         Self { sim }
     }
 
-    pub fn draw_outer_shell(&self) {}
+    pub async fn draw_outer_shell(&self) {}
 
-    pub fn draw_rooms(&self) {}
+    pub async fn draw_rooms(&self) {}
 
-    pub fn draw_robot(&self) {}
+    pub async fn draw_robot(&self) {}
 
-    pub fn draw_trail(&self) {}
+    pub async fn draw_trail(&self) {}
 
-    pub fn draw_beacon(&self) {}
+    pub async fn draw_beacon(&self) {}
 
     pub fn to_pixel(&self, point: Point) -> (f64, f64) {
         let xs: Vec<f64> = self.sim.map.outer_shell.iter().map(|p| p.x).collect();
