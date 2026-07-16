@@ -1,6 +1,6 @@
 use nalgebra::{Matrix2, Matrix2x3, Matrix3, Matrix3x2, Vector2, Vector3};
 use shared::map::DockingStation;
-use shared::measurement::Beacon;
+use shared::sensors::BeaconFix;
 
 const INITIAL_COVARIANCE: Matrix3<f64> = Matrix3::new(
     0.001, 0.0, 0.0, //
@@ -37,7 +37,6 @@ impl Ekf {
         }
     }
 
-    #[must_use]
     pub fn state(&self) -> (f64, f64, f64) {
         (self.state.x, self.state.y, self.state.z)
     }
@@ -77,7 +76,7 @@ impl Ekf {
         )
     }
 
-    pub fn update(&mut self, docking_station: &DockingStation, beacon: &Beacon) {
+    pub fn update(&mut self, docking_station: &DockingStation, beacon: &BeaconFix) {
         if beacon.range < 1e-6 {
             return;
         }
@@ -93,7 +92,7 @@ impl Ekf {
         self.covariance = new_covariance;
     }
 
-    fn innovation(&self, docking_station: &DockingStation, beacon: &Beacon) -> Vector2<f64> {
+    fn innovation(&self, docking_station: &DockingStation, beacon: &BeaconFix) -> Vector2<f64> {
         let predicted_range =
             (self.state.x - docking_station.point.x).hypot(self.state.y - docking_station.point.y);
         let predicted_bearing = (docking_station.point.y - self.state.y)

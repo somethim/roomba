@@ -1,11 +1,13 @@
 mod ekf;
+mod sensors;
 
 use crate::ekf::Ekf;
+use crate::sensors::WheelEncoderTicksExt;
 use nalgebra::{Matrix2, Matrix3};
 use shared::command::Command;
 use shared::map::Map;
-use shared::measurement::Measurement;
 use shared::pose::Pose;
+use shared::sensors::SensorFrame;
 
 pub use shared::hardware::Hardware;
 
@@ -42,13 +44,15 @@ impl Robot {
     }
 
     #[must_use]
-    pub fn plan<H>(&mut self, map: &Map, measurements: &Measurement) -> Command
+    pub fn plan<H>(&mut self, map: &Map, sensors: &SensorFrame) -> Command
     where
         H: Hardware,
     {
-        let odometry = measurements.odometry.into_motion::<H>();
+        let odometry = sensors.wheel_ticks.to_motion::<H>();
         self.ekf.predict(odometry.d, odometry.theta);
-        self.ekf.update(&map.docking_station, &measurements.beacon);
+        if let Some(beacon) = sensors.beacon.as_ref() {
+            self.ekf.update(&map.docking_station, beacon);
+        }
 
         Command {
             linear_velocity: 3.0,

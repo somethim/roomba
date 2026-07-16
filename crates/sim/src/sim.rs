@@ -1,7 +1,7 @@
 use robot::{Hardware, Robot};
-use shared::{command::Command, map::Map, measurement::Measurement, pose::Pose};
+use shared::{command::Command, map::Map, pose::Pose, sensors::SensorFrame};
 
-use crate::draw::Draw;
+use crate::sensors;
 
 pub struct SimHost {
     pub(crate) map: Map,
@@ -9,6 +9,7 @@ pub struct SimHost {
     pub(crate) ekf_pose: Pose,
     pub(crate) commands: (Command, Option<Command>),
     pub(crate) trail: Vec<Pose>,
+    pub(crate) time_ms: u64,
 }
 
 impl SimHost {
@@ -33,6 +34,7 @@ impl SimHost {
                 None,
             ),
             trail: Vec::new(),
+            time_ms: 0,
         }
     }
 }
@@ -43,12 +45,13 @@ impl Hardware for SimHost {
     const TRACK_WIDTH_M: f64 = 0.235;
     const ENCODER_TICKS_PER_REV: u32 = 508;
 
-    fn sense(&self) -> Measurement {
-        Measurement::new::<Self>(
+    fn sense(&self) -> SensorFrame {
+        sensors::sensor_frame::<Self>(
             &self.commands.0,
-            &self.commands.1,
+            self.commands.1.as_ref(),
             &self.true_pose,
             &self.map,
+            self.time_ms,
         )
     }
 
@@ -60,33 +63,14 @@ impl Hardware for SimHost {
         self.true_pose = self.true_pose.translate(d, theta);
         self.commands.1 = Some(self.commands.0);
         self.commands.0 = command;
+        self.time_ms = self.time_ms.saturating_add(u64::from(Self::CONTROL_DT_MS));
     }
 }
 
 impl SimHost {
-    pub async fn run(mut self) {
-        let mut robot = Robot::new(&self.map);
-        self.step(&mut robot);
-        self.draw().await;
-    }
-
-    fn step(&mut self, robot: &mut Robot) -> (f64, f64, f64, Measurement, Command) {
+    pub fn step(&mut self, robot: &mut Robot) {
         let measurement = self.sense();
         let command = robot.plan::<Self>(&self.map, &measurement);
         self.act(command);
-
-        let (ex, ey, eyaw) = robot.ekf().state();
-
-        (ex, ey, eyaw, measurement, command)
-    }
-
-    async fn draw(&self) {
-        let draw = Draw::new(self);
-
-        draw.draw_outer_shell().await;
-        draw.draw_rooms().await;
-        draw.draw_robot().await;
-        draw.draw_trail().await;
-        draw.draw_beacon().await;
     }
 }

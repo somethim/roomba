@@ -1,4 +1,4 @@
-use crate::{command::Command, measurement::Measurement};
+use crate::{command::Command, sensors::SensorFrame};
 
 pub trait Hardware {
     const CONTROL_DT_MS: u32;
@@ -6,7 +6,7 @@ pub trait Hardware {
     const TRACK_WIDTH_M: f64;
     const ENCODER_TICKS_PER_REV: u32;
 
-    fn sense(&self) -> Measurement;
+    fn sense(&self) -> SensorFrame;
 
     fn act(&mut self, command: Command);
 }

@@ -8,8 +8,8 @@ pub struct DockingStation {
 
 #[derive(Debug, Clone)]
 pub struct Opening {
-    pub x: f64,
-    pub y: f64,
+    pub start: Point,
+    pub end: Point,
 }
 
 #[derive(Debug, Clone)]
@@ -21,20 +21,14 @@ pub struct Room {
 
 #[derive(Debug, Clone)]
 pub struct Map {
-    pub outer_shell: Vec<Point>,
     pub rooms: Vec<Room>,
     pub docking_station: DockingStation,
 }
 
 impl Default for Map {
+    #[allow(clippy::too_many_lines)]
     fn default() -> Self {
         Self {
-            outer_shell: vec![
-                Point { x: 0.0, y: 0.0 },
-                Point { x: 18.0, y: 0.0 },
-                Point { x: 18.0, y: 10.0 },
-                Point { x: 0.0, y: 10.0 },
-            ],
             rooms: vec![
                 Room {
                     boundary: vec![
@@ -44,7 +38,10 @@ impl Default for Map {
                         Point { x: 0.0, y: 4.0 },
                     ],
                     cleanable: true,
-                    openings: vec![Opening { x: 3.0, y: 4.0 }],
+                    openings: vec![Opening {
+                        start: Point { x: 2.55, y: 4.0 },
+                        end: Point { x: 3.45, y: 4.0 },
+                    }],
                 },
                 Room {
                     boundary: vec![
@@ -54,7 +51,10 @@ impl Default for Map {
                         Point { x: 6.0, y: 4.0 },
                     ],
                     cleanable: true,
-                    openings: vec![Opening { x: 9.0, y: 4.0 }],
+                    openings: vec![Opening {
+                        start: Point { x: 8.55, y: 4.0 },
+                        end: Point { x: 9.45, y: 4.0 },
+                    }],
                 },
                 Room {
                     boundary: vec![
@@ -64,7 +64,10 @@ impl Default for Map {
                         Point { x: 12.0, y: 4.0 },
                     ],
                     cleanable: true,
-                    openings: vec![Opening { x: 15.0, y: 4.0 }],
+                    openings: vec![Opening {
+                        start: Point { x: 14.55, y: 4.0 },
+                        end: Point { x: 15.45, y: 4.0 },
+                    }],
                 },
                 Room {
                     boundary: vec![
@@ -74,7 +77,10 @@ impl Default for Map {
                         Point { x: 0.0, y: 7.0 },
                     ],
                     cleanable: true,
-                    openings: vec![Opening { x: 4.5, y: 5.5 }],
+                    openings: vec![Opening {
+                        start: Point { x: 4.5, y: 5.05 },
+                        end: Point { x: 4.5, y: 5.95 },
+                    }],
                 },
                 Room {
                     boundary: vec![
@@ -84,7 +90,10 @@ impl Default for Map {
                         Point { x: 4.5, y: 7.0 },
                     ],
                     cleanable: true,
-                    openings: vec![Opening { x: 9.0, y: 7.0 }],
+                    openings: vec![Opening {
+                        start: Point { x: 8.55, y: 7.0 },
+                        end: Point { x: 9.45, y: 7.0 },
+                    }],
                 },
                 Room {
                     boundary: vec![
@@ -94,7 +103,10 @@ impl Default for Map {
                         Point { x: 13.5, y: 7.0 },
                     ],
                     cleanable: true,
-                    openings: vec![Opening { x: 13.5, y: 5.5 }],
+                    openings: vec![Opening {
+                        start: Point { x: 13.5, y: 5.05 },
+                        end: Point { x: 13.5, y: 5.95 },
+                    }],
                 },
                 Room {
                     boundary: vec![
@@ -104,7 +116,10 @@ impl Default for Map {
                         Point { x: 0.0, y: 10.0 },
                     ],
                     cleanable: true,
-                    openings: vec![Opening { x: 8.0, y: 8.5 }],
+                    openings: vec![Opening {
+                        start: Point { x: 8.0, y: 8.05 },
+                        end: Point { x: 8.0, y: 8.95 },
+                    }],
                 },
                 Room {
                     boundary: vec![
@@ -114,7 +129,7 @@ impl Default for Map {
                         Point { x: 8.0, y: 10.0 },
                     ],
                     cleanable: true,
-                    openings: vec![Opening { x: 13.0, y: 7.0 }],
+                    openings: vec![],
                 },
             ],
             docking_station: DockingStation {

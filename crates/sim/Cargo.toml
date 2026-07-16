@@ -6,4 +6,4 @@ edition = "2024"
 [dependencies]
 robot.workspace = true
 shared.workspace = true
-macroquad.workspace = true
+rerun.workspace = true
