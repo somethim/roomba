@@ -3,11 +3,16 @@ use shared::{command::Command, map::Map, pose::Pose, sensors::SensorFrame};
 
 use crate::sensors;
 
+struct CommandState {
+    current_command: Command,
+    previous_command: Option<Command>,
+}
+
 pub struct SimHost {
     pub(crate) map: Map,
     pub(crate) true_pose: Pose,
     pub(crate) ekf_pose: Pose,
-    pub(crate) commands: (Command, Option<Command>),
+    pub(crate) commands: CommandState,
     pub(crate) trail: Vec<Pose>,
     pub(crate) time_ms: u64,
 }
@@ -26,13 +31,13 @@ impl SimHost {
                 heading: map.docking_station.orientation,
             },
             map,
-            commands: (
-                Command {
+            commands: CommandState {
+                current_command: Command {
                     linear_velocity: 0.0,
                     angular_velocity: 0.0,
                 },
-                None,
-            ),
+                previous_command: None,
+            },
             trail: Vec::new(),
             time_ms: 0,
         }

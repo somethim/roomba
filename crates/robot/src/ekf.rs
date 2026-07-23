@@ -37,10 +37,6 @@ impl Ekf {
         }
     }
 
-    pub fn state(&self) -> (f64, f64, f64) {
-        (self.state.x, self.state.y, self.state.z)
-    }
-
     pub fn predict(&mut self, d: f64, delta_theta: f64) {
         let motion_model_vector = self.motion_model(d, delta_theta);
         let jacobian_matrix = self.jacobian_f(d);
@@ -59,6 +55,7 @@ impl Ekf {
 
         let new_x = d.mul_add(yaw.cos(), x);
         let new_y = d.mul_add(yaw.sin(), y);
+        // TODO: Normalize state yaw and bearing innovations to [-π, π) so wraparound does not produce near-2π corrections.
         let new_yaw = yaw + delta_theta;
 
         Vector3::new(new_x, new_y, new_yaw)
